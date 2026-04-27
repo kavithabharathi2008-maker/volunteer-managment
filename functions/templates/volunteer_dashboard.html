@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2 class="fw-bold">Volunteer Dashboard</h2>
+        <p class="text-muted">Manage your profile and track your impact.</p>
+    </div>
+
+    <!-- Volunteer Profile -->
+    <div class="col-md-4 mb-4">
+        <div class="card p-4">
+            <h4 class="fw-bold mb-3">My Profile</h4>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Skills</label>
+                    <input type="text" name="skills" class="form-control" value="{{ volunteer.skills if volunteer else '' }}" placeholder="e.g. First Aid, Cooking" required>
+                    <div class="form-text">Comma separated skills.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Availability</label>
+                    <select name="availability" class="form-select">
+                        <option {% if volunteer and volunteer.availability == 'Immediate' %}selected{% endif %}>Immediate</option>
+                        <option {% if volunteer and volunteer.availability == 'Weekends' %}selected{% endif %}>Weekends</option>
+                        <option {% if volunteer and volunteer.availability == 'Evenings' %}selected{% endif %}>Evenings</option>
+                        <option {% if volunteer and volunteer.availability == 'Flexible' %}selected{% endif %}>Flexible</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Preferred Location</label>
+                    <input type="text" name="location" class="form-control" value="{{ volunteer.location if volunteer else '' }}" placeholder="e.g. San Francisco" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assigned Tasks -->
+    <div class="col-md-8 mb-4">
+        <div class="card p-4">
+            <h4 class="fw-bold mb-3">My Assigned Tasks</h4>
+            {% if tasks %}
+            <div class="row">
+                {% for task in tasks %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary">{{ task.issue.category }}</span>
+                                <span class="badge rounded-pill {% if task.status == 'Pending' %}bg-warning text-dark{% elif task.status == 'In Progress' %}bg-info{% else %}bg-success{% endif %}">
+                                    {{ task.status }}
+                                </span>
+                            </div>
+                            <h5 class="card-title fw-bold">{{ task.issue.location }}</h5>
+                            <p class="card-text small text-muted">{{ task.issue.description[:100] }}...</p>
+                            
+                            <form action="{{ url_for('update_status', task_id=task.id) }}" method="POST" class="mt-3">
+                                <div class="input-group input-group-sm">
+                                    <select name="status" class="form-select">
+                                        <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                    <button class="btn btn-outline-primary" type="submit">Update</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted bg-light rounded-3">
+                <p class="mb-0">You have no tasks assigned yet. Make sure your profile is updated!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

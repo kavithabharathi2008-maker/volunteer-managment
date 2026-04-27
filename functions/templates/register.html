@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6">
+        <div class="card p-4 shadow">
+            <h2 class="text-center fw-bold mb-4">Join the Community</h2>
+            <form method="POST">
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label">Full Name / NGO Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select" required>
+                        <option value="Volunteer">Volunteer</option>
+                        <option value="NGO">NGO</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Primary Location (City/Area)</label>
+                    <input type="text" name="location" class="form-control" placeholder="e.g. San Francisco" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">I agree to the terms and conditions</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">Create Account</button>
+            </form>
+            <p class="text-center mt-4">Already have an account? <a href="/login">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

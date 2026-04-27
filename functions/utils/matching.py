@@ -1,12 +1,12 @@
-def calculate_priority_score(task):
+def calculate_priority_score(issue):
     """
-    Calculates a priority score based on urgency and issue type impact.
+    Calculates a priority score based on urgency and category impact.
     Higher score means higher priority.
     """
     # Base urgency (1-5) multiplied by 10
-    score = task.urgency_level * 10
+    score = issue.urgency * 10
     
-    # Impact multipliers based on issue type (can be tuned)
+    # Impact multipliers based on category
     impact_multipliers = {
         'Health': 1.5,
         'Food': 1.4,
@@ -16,19 +16,19 @@ def calculate_priority_score(task):
         'Other': 1.0
     }
     
-    multiplier = impact_multipliers.get(task.issue_type, 1.0)
+    multiplier = impact_multipliers.get(issue.category, 1.0)
     final_score = int(score * multiplier)
     return final_score
 
-def match_volunteers_to_task(task, all_volunteers):
+def match_volunteers_to_issue(issue, all_volunteers):
     """
     Returns a list of tuples (volunteer, match_score) sorted by score descending.
-    Matches based on skills and location proximity (simulated).
+    Matches based on skills and location proximity.
     """
     matches = []
     
-    # Parse task keywords from title, description, and issue type
-    task_keywords = set((task.title + " " + task.description + " " + task.issue_type).lower().split())
+    # Parse keywords from description and category
+    task_keywords = set((issue.description + " " + issue.category).lower().split())
     
     for volunteer in all_volunteers:
         score = 0
@@ -44,11 +44,11 @@ def match_volunteers_to_task(task, all_volunteers):
                     break # Count each skill match only once
 
         # Location matching (simplified: exact city match gets 30 points)
-        if task.location.lower().strip() == volunteer.location.lower().strip():
+        if issue.location.lower().strip() == volunteer.location.lower().strip():
             score += 30
             
         # Base availability score
-        if "immediate" in volunteer.availability.lower():
+        if "immediate" in volunteer.availability.lower() or "flexible" in volunteer.availability.lower():
             score += 10
             
         if score > 0:

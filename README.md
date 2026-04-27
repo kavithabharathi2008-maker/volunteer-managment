@@ -70,11 +70,14 @@ For presentation/testing purposes, use these pre-seeded accounts:
 3. **Build Command**: `pip install -r requirements.txt`
 4. **Start Command**: `gunicorn app:app`
 
-### Frontend (Netlify / Vercel)
-The app is configured for Vercel out of the box via `vercel.json`.
-1. Connect your GitHub repository to Vercel.
-2. Add your `GEMINI_API_KEY` to Vercel environment variables.
-3. Deploy!
+### Firebase (Hosting + Functions)
+1. **Initialize**: `firebase init` (Select Hosting and Functions).
+2. **Project**: Select your existing Firebase project.
+3. **Deploy**:
+```bash
+firebase deploy
+```
+*(Note: Ensure you have upgraded to the Firebase Blaze plan to use Cloud Functions for Python).*
 
 ---
 

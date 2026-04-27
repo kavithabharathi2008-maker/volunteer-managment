@@ -3,13 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Needs & Volunteer Matcher</title>
+    <title>Community Needs Intelligence & Volunteer Matching</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Leaflet CSS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+        }
         /* Chatbot Styles */
         #chatbot-widget {
             position: fixed;
@@ -17,85 +45,112 @@
             right: 20px;
             width: 350px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             display: none;
             flex-direction: column;
             z-index: 1000;
+            overflow: hidden;
         }
         #chatbot-header {
-            background: #0d6efd;
+            background: var(--primary-gradient);
             color: white;
-            padding: 10px;
-            border-radius: 10px 10px 0 0;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         #chatbot-messages {
-            height: 300px;
+            height: 350px;
             overflow-y: auto;
-            padding: 10px;
-            font-size: 0.9em;
+            padding: 15px;
+            background: #fdfdfd;
         }
         #chatbot-input-area {
             display: flex;
-            border-top: 1px solid #ddd;
+            padding: 10px;
+            border-top: 1px solid #eee;
         }
         #chatbot-input {
             flex-grow: 1;
-            border: none;
+            border: 1px solid #eee;
             padding: 10px;
-            border-radius: 0 0 0 10px;
+            border-radius: 20px;
+            outline: none;
         }
         #chatbot-send {
-            background: #0d6efd;
+            background: var(--primary-gradient);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 0 0 10px 0;
-            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 50%;
+            margin-left: 10px;
         }
         #chatbot-toggle {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #0d6efd;
+            background: var(--primary-gradient);
             color: white;
             border: none;
             border-radius: 50%;
             width: 60px;
             height: 60px;
             font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             cursor: pointer;
             z-index: 999;
+            transition: transform 0.3s ease;
         }
-        .bot-msg { background: #f1f1f1; padding: 8px; border-radius: 5px; margin-bottom: 5px; }
-        .user-msg { background: #d1e7dd; padding: 8px; border-radius: 5px; margin-bottom: 5px; text-align: right; }
+        #chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+        .bot-msg { background: #f1f3f5; padding: 10px 15px; border-radius: 15px 15px 15px 0; margin-bottom: 10px; align-self: flex-start; max-width: 80%; }
+        .user-msg { background: #e7f3ff; color: #007bff; padding: 10px 15px; border-radius: 15px 15px 0 15px; margin-bottom: 10px; align-self: flex-end; text-align: right; margin-left: auto; max-width: 80%; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Community Matcher</a>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🌍 Community Matching</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Dashboard</a>
+                        <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tasks">Tasks</a>
+                        <a class="nav-link" href="/map">Live Map</a>
                     </li>
+                    {% if session.get('user_role') == 'NGO' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/data_collection">Report Issue</a>
+                        <a class="nav-link" href="/ngo_dashboard">NGO Dashboard</a>
                     </li>
+                    {% elif session.get('user_role') == 'Volunteer' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/volunteers">Volunteers</a>
+                        <a class="nav-link" href="/volunteer_dashboard">Volunteer Dashboard</a>
                     </li>
+                    {% elif session.get('user_role') == 'Admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin_dashboard">Admin Dashboard</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('user_id') %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/logout">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">Join Us</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -105,7 +160,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -125,12 +180,12 @@
             <strong>AI Assistant (Gemini)</strong>
             <button class="btn-close btn-close-white" style="font-size: 0.8em;" onclick="toggleChatbot()"></button>
         </div>
-        <div id="chatbot-messages">
-            <div class="bot-msg">Hello! I am your Gemini AI assistant. How can I help you today?</div>
+        <div id="chatbot-messages" class="d-flex flex-column">
+            <div class="bot-msg">Hello! I am your AI assistant. How can I help you today?</div>
         </div>
         <div id="chatbot-input-area">
-            <input type="text" id="chatbot-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-            <button id="chatbot-send" onclick="sendMessage()">Send</button>
+            <input type="text" id="chatbot-input" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+            <button id="chatbot-send" onclick="sendMessage()">➤</button>
         </div>
     </div>
 

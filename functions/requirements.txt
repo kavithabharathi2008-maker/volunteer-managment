@@ -1,0 +1,7 @@
+firebase-functions
+firebase-admin
+flask
+flask-sqlalchemy
+python-dotenv
+google-generativeai
+pymysql
