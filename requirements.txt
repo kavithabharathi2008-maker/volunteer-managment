@@ -4,3 +4,4 @@ Flask-SQLAlchemy
 python-dotenv
 google-generativeai
 PyMySQL
+psycopg2-binary

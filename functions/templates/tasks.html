@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 d-flex justify-content-between align-items-center">
+        <h2>Reported Needs & Tasks</h2>
+        <a href="{{ url_for('data_collection') }}" class="btn btn-primary">Report New Need</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Issue Type</th>
+                                <th>Location</th>
+                                <th>Urgency</th>
+                                <th>Priority Score</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr class="{% if task.urgency_level >= 4 %}table-danger{% endif %}">
+                                <td>
+                                    <strong>{{ task.title }}</strong><br>
+                                    <small class="text-muted">{{ task.description[:50] }}...</small>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ task.issue_type }}</span></td>
+                                <td>{{ task.location }}</td>
+                                <td>
+                                    <!-- Stars for urgency -->
+                                    <span class="text-danger">
+                                        {% for i in range(task.urgency_level) %}★{% endfor %}
+                                    </span>
+                                </td>
+                                <td><span class="badge bg-dark rounded-pill">{{ task.priority_score }}</span></td>
+                                <td>
+                                    {% if task.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif task.status == 'In Progress' %}
+                                        <span class="badge bg-primary">In Progress</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.status == 'Pending' %}
+                                        <a href="{{ url_for('match_volunteers', task_id=task.id) }}" class="btn btn-sm btn-outline-success">Find Match</a>
+                                    {% elif task.status == 'In Progress' %}
+                                        <small class="text-muted">Assigned to: {{ task.assigned_volunteer.name }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No tasks reported yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

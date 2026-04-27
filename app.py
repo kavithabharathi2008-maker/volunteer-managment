@@ -14,17 +14,24 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hackathon_super_secret_key'
 
 # Configure Database
-# By default, use SQLite for easy local setup.
-# To use MySQL, uncomment the following line and add your credentials:
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://username:password@localhost/db_name'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///community.db'
+# Priority: 1. DATABASE_URL (for Vercel/Production), 2. SQLite (for Local)
+database_url = os.getenv('DATABASE_URL')
+if database_url and database_url.startswith("postgres://"):
+    # Fix for newer SQLAlchemy versions that require postgresql://
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///community.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Create database tables before first request
+# Create database tables
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
+        # On some serverless platforms, this might fail if the DB is not ready or if it's read-only
 
 @app.route('/')
 def dashboard():

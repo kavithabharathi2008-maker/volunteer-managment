@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Volunteer Management</h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Registration Form -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Register Volunteer</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('volunteers') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Skills (comma separated)</label>
+                        <input type="text" class="form-control" name="skills" placeholder="e.g. Nursing, Cooking, Driving" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Location (City)</label>
+                        <input type="text" class="form-control" name="location" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Availability</label>
+                        <select class="form-select" name="availability" required>
+                            <option value="Immediate">Immediate</option>
+                            <option value="Weekends">Weekends Only</option>
+                            <option value="Evenings">Evenings</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white w-100">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registered Volunteers List -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Registered Volunteers</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Skills</th>
+                                <th>Location</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vol in volunteers %}
+                            <tr>
+                                <td>{{ vol.name }}</td>
+                                <td>
+                                    {% for skill in vol.skills.split(',') %}
+                                        <span class="badge bg-light text-dark border">{{ skill.strip() }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>{{ vol.location }}</td>
+                                <td>{{ vol.availability }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No volunteers registered yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

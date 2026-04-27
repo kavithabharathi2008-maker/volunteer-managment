@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Manual Entry Form</h4>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('data_collection') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Title / Short Description</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Detailed Description</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Issue Type</label>
+                        <select class="form-select" name="issue_type" required>
+                            <option value="Health">Health</option>
+                            <option value="Education">Education</option>
+                            <option value="Food">Food</option>
+                            <option value="Shelter">Shelter</option>
+                            <option value="Environment">Environment</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Urgency Level (1-5)</label>
+                        <input type="range" class="form-range" name="urgency_level" min="1" max="5" step="1" value="3" oninput="this.nextElementSibling.value = this.value">
+                        <output>3</output>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Location (City or Address)</label>
+                        <input type="text" class="form-control" name="location" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit Need</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Bulk Upload (CSV)</h4>
+            </div>
+            <div class="card-body">
+                <p>Upload a CSV file with the following headers: <code>Title, Description, Issue Type, Urgency, Location, Latitude, Longitude</code></p>
+                <form action="{{ url_for('data_collection') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="csv_file" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Upload CSV</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
