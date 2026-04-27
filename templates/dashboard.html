@@ -3,31 +3,75 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
-        <h2 class="mb-4">Admin Dashboard</h2>
-    </div>
-    
-    <!-- Stats Cards -->
-    <div class="col-md-4 mb-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Total Needs Reported</h5>
-                <p class="card-text fs-2">{{ stats.total }}</p>
-            </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold">Admin Intelligence Dashboard</h2>
+            <div class="text-muted small">Real-time Community Data Analysis</div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h5 class="card-title">Pending Tasks</h5>
-                <p class="card-text fs-2">{{ stats.pending }}</p>
-            </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white border-start border-primary border-4 p-3 h-100">
+            <div class="text-muted small fw-bold text-uppercase">Total Issues</div>
+            <div class="display-6 fw-bold">{{ tasks|length }}</div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Registered Volunteers</h5>
-                <p class="card-text fs-2">{{ stats.volunteers }}</p>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white border-start border-warning border-4 p-3 h-100">
+            <div class="text-muted small fw-bold text-uppercase">Pending Tasks</div>
+            <div class="display-6 fw-bold">{{ tasks|selectattr('status', 'equalto', 'Pending')|list|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white border-start border-success border-4 p-3 h-100">
+            <div class="text-muted small fw-bold text-uppercase">Active Volunteers</div>
+            <div class="display-6 fw-bold">{{ volunteers|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white border-start border-danger border-4 p-3 h-100">
+            <div class="text-muted small fw-bold text-uppercase">Critical Needs</div>
+            <div class="display-6 fw-bold">{{ tasks|selectattr('issue.urgency', 'ge', 4)|list|length }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Intelligence Feature: Top 5 Critical Needs -->
+    <div class="col-md-12">
+        <div class="card p-4 shadow-sm mb-4 border-0" style="background: linear-gradient(to right, #ffffff, #fff5f5);">
+            <h4 class="fw-bold mb-3 text-danger">🔥 Top 5 Critical Needs (Intelligence Suggestion)</h4>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Priority Score</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Urgency</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in critical_needs %}
+                        <tr>
+                            <td><span class="badge bg-danger p-2">{{ task.priority_score }}</span></td>
+                            <td><span class="fw-bold">{{ task.issue.category }}</span></td>
+                            <td>{{ task.issue.location }}</td>
+                            <td>
+                                <div class="progress" style="height: 10px; width: 100px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ task.issue.urgency * 20 }}%"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="/match/{{ task.id }}" class="btn btn-sm btn-outline-primary rounded-pill">Assign Best Match</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -35,32 +79,85 @@
 
 <div class="row mb-4">
     <!-- Charts -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Needs by Category</h5>
-                <canvas id="categoryChart"></canvas>
-            </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-3 h-100 border-0">
+            <h5 class="fw-bold text-center mb-3">Needs by Category</h5>
+            <canvas id="categoryChart"></canvas>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Urgency Distribution</h5>
-                <canvas id="urgencyChart"></canvas>
-            </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-3 h-100 border-0">
+            <h5 class="fw-bold text-center mb-3">Urgency Distribution</h5>
+            <canvas id="urgencyChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-3 h-100 border-0">
+            <h5 class="fw-bold text-center mb-3">Affected Areas</h5>
+            <canvas id="areaChart"></canvas>
         </div>
     </div>
 </div>
 
-<!-- Map -->
+<!-- Task Management Table -->
 <div class="row">
-    <div class="col-md-12 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Problem Areas Map</h5>
-                <p class="text-muted small">Visualizing tasks with valid coordinates</p>
-                <div id="map" style="height: 400px; border-radius: 8px;"></div>
+    <div class="col-md-12">
+        <div class="card p-4 border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">All Community Issues</h4>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary">Filter by Urgency</button>
+                    <button class="btn btn-outline-secondary">Filter by Status</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Reported</th>
+                            <th>Issue</th>
+                            <th>Location</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                            <th>Volunteer</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>#{{ task.id }}</td>
+                            <td>{{ task.issue.date_reported.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="fw-bold">{{ task.issue.category }}</div>
+                                <div class="small text-muted">{{ task.issue.description[:50] }}...</div>
+                            </td>
+                            <td>{{ task.issue.location }}</td>
+                            <td>
+                                <span class="badge {% if task.issue.urgency >= 4 %}bg-danger{% elif task.issue.urgency == 3 %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+                                    Lvl {{ task.issue.urgency }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill {% if task.status == 'Pending' %}bg-secondary{% elif task.status == 'In Progress' %}bg-primary{% else %}bg-success{% endif %}">
+                                    {{ task.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if task.volunteer %}
+                                <span class="text-primary">{{ task.volunteer.name }}</span>
+                                {% else %}
+                                <span class="text-muted small">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/match/{{ task.id }}" class="btn btn-sm btn-light">Match</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -69,68 +166,49 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Chart Data
-    const categoryData = {{ issue_counts | tojson | safe }};
+    // Chart Config
+    const categoryData = {{ category_counts | tojson | safe }};
     const urgencyData = {{ urgency_counts | tojson | safe }};
+    const areaData = {{ area_counts | tojson | safe }};
     
-    // Initialize Category Chart
-    const ctxCat = document.getElementById('categoryChart').getContext('2d');
-    new Chart(ctxCat, {
-        type: 'pie',
+    // Category Chart
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
         data: {
             labels: Object.keys(categoryData),
             datasets: [{
                 data: Object.values(categoryData),
-                backgroundColor: ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0', '#6c757d']
-            }]
-        }
-    });
-    
-    // Initialize Urgency Chart
-    const ctxUrg = document.getElementById('urgencyChart').getContext('2d');
-    new Chart(ctxUrg, {
-        type: 'bar',
-        data: {
-            labels: ['Low (1)', 'Moderate (2)', 'High (3)', 'Severe (4)', 'Critical (5)'],
-            datasets: [{
-                label: 'Number of Tasks',
-                data: [urgencyData[1], urgencyData[2], urgencyData[3], urgencyData[4], urgencyData[5]],
-                backgroundColor: '#dc3545'
+                backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe']
             }]
         },
-        options: {
-            scales: {
-                y: { beginAtZero: true }
-            }
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+    
+    // Urgency Chart
+    new Chart(document.getElementById('urgencyChart'), {
+        type: 'bar',
+        data: {
+            labels: ['1', '2', '3', '4', '5'],
+            datasets: [{
+                label: 'Issues',
+                data: [urgencyData[1], urgencyData[2], urgencyData[3], urgencyData[4], urgencyData[5]],
+                backgroundColor: '#f5576c'
+            }]
         }
     });
 
-    // Initialize Leaflet Map
-    // Default center (San Francisco for demo purposes)
-    const map = L.map('map').setView([37.7749, -122.4194], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Add markers for tasks with coordinates
-    const tasks = [
-        {% for task in tasks %}
-            {% if task.latitude and task.longitude %}
-                { title: "{{ task.title }}", lat: {{ task.latitude }}, lng: {{ task.longitude }}, type: "{{ task.issue_type }}", urgency: {{ task.urgency_level }} },
-            {% endif %}
-        {% endfor %}
-    ];
-
-    tasks.forEach(t => {
-        let color = t.urgency >= 4 ? 'red' : 'blue';
-        L.circleMarker([t.lat, t.lng], {
-            color: color,
-            fillColor: color,
-            fillOpacity: 0.7,
-            radius: 8
-        }).addTo(map).bindPopup(`<b>${t.title}</b><br>Type: ${t.type}<br>Urgency: ${t.urgency}`);
+    // Area Chart
+    new Chart(document.getElementById('areaChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(areaData),
+            datasets: [{
+                data: Object.values(areaData),
+                backgroundColor: ['#48c6ef', '#6f86d6', '#fdfcfb', '#e2d1c3', '#a18cd1', '#fbc2eb']
+            }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
     });
 </script>
 {% endblock %}

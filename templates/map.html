@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2 class="fw-bold">Live Community Needs Map</h2>
+        <p class="text-muted">Visualizing reported issues and identifying high-priority hotspots.</p>
+    </div>
+    
+    <div class="col-md-9 mb-4">
+        <div class="card shadow-sm overflow-hidden">
+            <div id="map" style="height: 600px;"></div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card p-3 shadow-sm h-100">
+            <h5 class="fw-bold mb-3">Map Legend</h5>
+            <div class="mb-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width: 15px; height: 15px; background: #dc3545; border-radius: 50%; margin-right: 10px;"></div>
+                    <span>Critical (Urgency 4-5)</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width: 15px; height: 15px; background: #ffc107; border-radius: 50%; margin-right: 10px;"></div>
+                    <span>High (Urgency 3)</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width: 15px; height: 15px; background: #0d6efd; border-radius: 50%; margin-right: 10px;"></div>
+                    <span>Normal (Urgency 1-2)</span>
+                </div>
+            </div>
+            <hr>
+            <h5 class="fw-bold mb-3">Recent Reports</h5>
+            <div class="small overflow-auto" style="max-height: 300px;">
+                {% for task in tasks[:10] %}
+                <div class="border-bottom pb-2 mb-2">
+                    <strong>{{ task.issue.category }}</strong> at {{ task.issue.location }}
+                    <br>
+                    <span class="text-muted">{{ task.issue.date_reported.strftime('%b %d, %H:%M') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize Map
+    // Default to San Francisco center
+    const map = L.map('map').setView([37.7749, -122.4194], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marker Data
+    const tasks = [
+        {% for task in tasks %}
+            {% if task.issue.latitude and task.issue.longitude %}
+            {
+                id: {{ task.id }},
+                category: "{{ task.issue.category }}",
+                urgency: {{ task.issue.urgency }},
+                location: "{{ task.issue.location }}",
+                lat: {{ task.issue.latitude }},
+                lng: {{ task.issue.longitude }},
+                status: "{{ task.status }}"
+            },
+            {% endif %}
+        {% endfor %}
+    ];
+
+    tasks.forEach(t => {
+        let color = '#0d6efd';
+        if (t.urgency >= 4) color = '#dc3545';
+        else if (t.urgency == 3) color = '#ffc107';
+
+        L.circleMarker([t.lat, t.lng], {
+            radius: 10,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`
+            <div class="p-2">
+                <h6 class="fw-bold mb-1">${t.category}</h6>
+                <p class="small mb-1"><b>Location:</b> ${t.location}</p>
+                <p class="small mb-1"><b>Urgency:</b> ${t.urgency}/5</p>
+                <p class="small mb-0"><b>Status:</b> ${t.status}</p>
+            </div>
+        `);
+    });
+</script>
+{% endblock %}

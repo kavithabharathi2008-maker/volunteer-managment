@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2 class="fw-bold">NGO Dashboard</h2>
+        <p class="text-muted">Report community needs and track their status.</p>
+    </div>
+
+    <!-- Report Issue Form -->
+    <div class="col-md-5 mb-4">
+        <div class="card p-4">
+            <h4 class="fw-bold mb-3">Report New Issue</h4>
+            <ul class="nav nav-tabs mb-3" id="reportTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button">Manual Entry</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv" type="button">CSV Upload</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="reportTabContent">
+                <!-- Manual Entry -->
+                <div class="tab-pane fade show active" id="manual" role="tabpanel">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <option>Health</option>
+                                <option>Food</option>
+                                <option>Education</option>
+                                <option>Shelter</option>
+                                <option>Environment</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Urgency Level</label>
+                            <select name="urgency" class="form-select">
+                                <option value="1">Low (1)</option>
+                                <option value="2">Moderate (2)</option>
+                                <option value="3">High (3)</option>
+                                <option value="4">Severe (4)</option>
+                                <option value="5">Critical (5)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location (City/Area)</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Mission District" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+                    </form>
+                </div>
+                <!-- CSV Upload -->
+                <div class="tab-pane fade" id="csv" role="tabpanel">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Upload CSV File</label>
+                            <input type="file" name="csv_file" class="form-control" accept=".csv">
+                            <div class="form-text mt-2 small text-muted">
+                                Required Columns: Category, Urgency, Location, Description
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Upload CSV</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Reported Issues -->
+    <div class="col-md-7 mb-4">
+        <div class="card p-4">
+            <h4 class="fw-bold mb-3">My Reported Issues</h4>
+            {% if issues %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Category</th>
+                            <th>Urgency</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue in issues %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ issue.category }}</span></td>
+                            <td>
+                                {% if issue.urgency >= 4 %}
+                                <span class="text-danger fw-bold">Critical</span>
+                                {% elif issue.urgency == 3 %}
+                                <span class="text-warning fw-bold">High</span>
+                                {% else %}
+                                <span class="text-success">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ issue.location }}</td>
+                            <td>
+                                {% set task = issue.tasks[0] %}
+                                {% if task.status == 'Pending' %}
+                                <span class="badge rounded-pill bg-warning text-dark">Pending</span>
+                                {% elif task.status == 'In Progress' %}
+                                <span class="badge rounded-pill bg-info text-white">In Progress</span>
+                                {% else %}
+                                <span class="badge rounded-pill bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <p>No issues reported yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
