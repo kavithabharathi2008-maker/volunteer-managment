@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Volunteer Matching</h2>
+        <p class="text-muted">Finding the best volunteers for: <strong>{{ task.title }}</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Task Summary -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Task Details</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Issue Type:</strong> <span class="badge bg-secondary">{{ task.issue_type }}</span></p>
+                <p><strong>Location:</strong> {{ task.location }}</p>
+                <p><strong>Urgency:</strong> {{ task.urgency_level }} / 5</p>
+                <p><strong>Description:</strong></p>
+                <p class="text-muted small">{{ task.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matches -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Suggested Matches</h5>
+                <span class="badge bg-light text-dark">{{ matches|length }} found</span>
+            </div>
+            <div class="card-body">
+                {% if matches %}
+                    <div class="list-group">
+                        {% for volunteer, score in matches %}
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ volunteer.name }} <span class="badge bg-info ms-2">Match Score: {{ score }}</span></h6>
+                                    <p class="mb-1 small">
+                                        <strong>Skills:</strong> {{ volunteer.skills }} <br>
+                                        <strong>Location:</strong> {{ volunteer.location }} <br>
+                                        <strong>Availability:</strong> {{ volunteer.availability }}
+                                    </p>
+                                </div>
+                                <form action="{{ url_for('assign_volunteer', task_id=task.id, volunteer_id=volunteer.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-success">Assign Task</button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        No volunteers currently match this task's requirements. Try broadening the task description or recruiting more volunteers.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

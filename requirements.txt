@@ -1,0 +1,6 @@
+Flask
+SQLAlchemy
+Flask-SQLAlchemy
+python-dotenv
+google-generativeai
+PyMySQL
